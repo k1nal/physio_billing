@@ -1,98 +1,263 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import React from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
+import { useBillingStore } from '@/store/billingStore';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 
-export default function HomeScreen() {
+export default function DashboardScreen() {
+  const { getDashboardStats, invoices } = useBillingStore();
+  const stats = getDashboardStats();
+  
+  const recentInvoices = invoices
+    .sort((a, b) => new Date(b.issuedOn).getTime() - new Date(a.issuedOn).getTime())
+    .slice(0, 5);
+
+  const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Dashboard</Text>
+        <Text style={styles.subtitle}>Physio Billing</Text>
+      </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      {/* Quick Actions */}
+      <Card>
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <View style={styles.actionButtons}>
+          <Link href="/invoice/create" asChild>
+            <TouchableOpacity style={styles.actionButton}>
+              <Ionicons name="add-circle" size={24} color="#FF6B35" />
+              <Text style={styles.actionText}>New Invoice</Text>
+            </TouchableOpacity>
+          </Link>
+          <Link href="/reports" asChild>
+            <TouchableOpacity style={styles.actionButton}>
+              <Ionicons name="bar-chart" size={24} color="#FF6B35" />
+              <Text style={styles.actionText}>View Reports</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
+      </Card>
+
+      {/* Stats Cards */}
+      <View style={styles.statsGrid}>
+        <Card style={styles.statCard}>
+          <View style={styles.statHeader}>
+            <Ionicons name="wallet" size={24} color="#34C759" />
+            <Text style={styles.statValue}>{formatCurrency(stats.totalRevenue)}</Text>
+          </View>
+          <Text style={styles.statLabel}>Total Revenue</Text>
+        </Card>
+
+        <Card style={styles.statCard}>
+          <View style={styles.statHeader}>
+            <Ionicons name="time" size={24} color="#FF9500" />
+            <Text style={styles.statValue}>{formatCurrency(stats.outstandingAmount)}</Text>
+          </View>
+          <Text style={styles.statLabel}>Outstanding</Text>
+        </Card>
+
+        <Card style={styles.statCard}>
+          <View style={styles.statHeader}>
+            <Ionicons name="people" size={24} color="#007AFF" />
+            <Text style={styles.statValue}>{stats.totalPatients}</Text>
+          </View>
+          <Text style={styles.statLabel}>Patients</Text>
+        </Card>
+
+        <Card style={styles.statCard}>
+          <View style={styles.statHeader}>
+            <Ionicons name="document-text" size={24} color="#5856D6" />
+            <Text style={styles.statValue}>{stats.totalInvoices}</Text>
+          </View>
+          <Text style={styles.statLabel}>Invoices</Text>
+        </Card>
+      </View>
+
+      {/* Recent Invoices */}
+      <Card>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Recent Invoices</Text>
+          <Link href="/reports" asChild>
+            <TouchableOpacity>
+              <Text style={styles.seeAllText}>See All</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
+        
+        {recentInvoices.length === 0 ? (
+          <Text style={styles.emptyText}>No invoices yet</Text>
+        ) : (
+          recentInvoices.map((invoice) => {
+            const patient = useBillingStore.getState().getPatientById(invoice.patientId);
+            return (
+              <Link key={invoice.id} href={`/invoice/${invoice.id}`} asChild>
+                <TouchableOpacity style={styles.invoiceItem}>
+                  <View style={styles.invoiceInfo}>
+                    <Text style={styles.patientName}>{patient?.name || 'Unknown'}</Text>
+                    <Text style={styles.invoiceDate}>
+                      {new Date(invoice.issuedOn).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <View style={styles.invoiceAmount}>
+                    <Text style={styles.amountText}>{formatCurrency(invoice.total)}</Text>
+                    <View style={[
+                      styles.statusBadge, 
+                      invoice.status === 'paid' ? styles.paidBadge : styles.unpaidBadge
+                    ]}>
+                      <Text style={[
+                        styles.statusText,
+                        invoice.status === 'paid' ? styles.paidText : styles.unpaidText
+                      ]}>
+                        {invoice.status.toUpperCase()}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              </Link>
+            );
+          })
+        )}
+      </Card>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: '#1C1C1E',
+  },
+  header: {
+    padding: 20,
+    paddingTop: 60,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#8E8E93',
+    marginTop: 4,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  seeAllText: {
+    color: '#FF6B35',
+    fontSize: 16,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  actionButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#F2F2F7',
+    borderRadius: 12,
+  },
+  actionText: {
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#FF6B35',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    paddingHorizontal: 16,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: '45%',
+  },
+  statHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
+    justifyContent: 'space-between',
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginTop: 4,
+  },
+  invoiceItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  invoiceInfo: {
+    flex: 1,
+  },
+  patientName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#FFFFFF',
+  },
+  invoiceDate: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginTop: 2,
+  },
+  invoiceAmount: {
+    alignItems: 'flex-end',
+  },
+  amountText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 4,
+  },
+  paidBadge: {
+    backgroundColor: '#E8F5E8',
+  },
+  unpaidBadge: {
+    backgroundColor: '#FFF2E8',
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  paidText: {
+    color: '#34C759',
+  },
+  unpaidText: {
+    color: '#FF9500',
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#8E8E93',
+    fontSize: 16,
+    paddingVertical: 20,
   },
 });

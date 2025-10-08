@@ -1,112 +1,229 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import { useBillingStore } from '@/store/billingStore';
+import { Card } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+export default function SettingsScreen() {
+  const { patients, services, invoices } = useBillingStore();
+  const [clinicName, setClinicName] = useState('Physiotherapy Clinic');
+  const [clinicAddress, setClinicAddress] = useState('123 Health Street, Medical District, City - 123456');
+  const [clinicPhone, setClinicPhone] = useState('+91 98765 43210');
+  const [clinicEmail, setClinicEmail] = useState('info@physioclinic.com');
 
-export default function TabTwoScreen() {
+  const handleSaveSettings = () => {
+    Alert.alert('Success', 'Settings saved successfully!');
+  };
+
+  const handleExportData = () => {
+    const data = {
+      patients,
+      services,
+      invoices,
+      exportDate: new Date().toISOString(),
+    };
+    
+    // In a real app, this would export to CSV or JSON file
+    console.log('Export data:', data);
+    Alert.alert('Export', 'Data export functionality would be implemented here');
+  };
+
+  const handleImportData = () => {
+    Alert.alert('Import', 'Data import functionality would be implemented here');
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Settings</Text>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Clinic Information */}
+        <Card>
+          <Text style={styles.sectionTitle}>Clinic Information</Text>
+          
+          <Input
+            label="Clinic Name"
+            value={clinicName}
+            onChangeText={setClinicName}
+            placeholder="Enter clinic name"
+          />
+          
+          <Input
+            label="Address"
+            value={clinicAddress}
+            onChangeText={setClinicAddress}
+            placeholder="Enter clinic address"
+            multiline
+            numberOfLines={3}
+          />
+          
+          <Input
+            label="Phone"
+            value={clinicPhone}
+            onChangeText={setClinicPhone}
+            placeholder="Enter phone number"
+            keyboardType="phone-pad"
+          />
+          
+          <Input
+            label="Email"
+            value={clinicEmail}
+            onChangeText={setClinicEmail}
+            placeholder="Enter email address"
+            keyboardType="email-address"
+          />
+          
+          <Button
+            title="Save Settings"
+            onPress={handleSaveSettings}
+          />
+        </Card>
+
+        {/* Data Management */}
+        <Card>
+          <Text style={styles.sectionTitle}>Data Management</Text>
+          
+          <View style={styles.dataStats}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{patients.length}</Text>
+              <Text style={styles.statLabel}>Patients</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{services.length}</Text>
+              <Text style={styles.statLabel}>Services</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{invoices.length}</Text>
+              <Text style={styles.statLabel}>Invoices</Text>
+            </View>
+          </View>
+          
+          <View style={styles.dataActions}>
+            <Button
+              title="Export Data"
+              onPress={handleExportData}
+              variant="secondary"
+            />
+            <Button
+              title="Import Data"
+              onPress={handleImportData}
+              variant="secondary"
+            />
+          </View>
+        </Card>
+
+        {/* App Information */}
+        <Card>
+          <Text style={styles.sectionTitle}>About</Text>
+          
+          <View style={styles.aboutInfo}>
+            <Text style={styles.aboutText}>
+              <Text style={styles.aboutLabel}>App Version:</Text> 1.0.0
+            </Text>
+            <Text style={styles.aboutText}>
+              <Text style={styles.aboutLabel}>Build:</Text> Production
+            </Text>
+            <Text style={styles.aboutText}>
+              <Text style={styles.aboutLabel}>Platform:</Text> React Native + Expo
+            </Text>
+          </View>
+          
+          <Text style={styles.description}>
+            A simple, offline-first billing application designed specifically for physiotherapy clinics. 
+            All your data is stored locally on your device for complete privacy.
+          </Text>
+        </Card>
+
+        {/* Features List */}
+        <Card>
+          <Text style={styles.sectionTitle}>Features</Text>
+          
+          <View style={styles.featuresList}>
+            <Text style={styles.featureItem}>✓ Patient Management</Text>
+            <Text style={styles.featureItem}>✓ Service Management</Text>
+            <Text style={styles.featureItem}>✓ Invoice Generation</Text>
+            <Text style={styles.featureItem}>✓ PDF Export & Sharing</Text>
+            <Text style={styles.featureItem}>✓ Reports & Analytics</Text>
+            <Text style={styles.featureItem}>✓ Offline-First Storage</Text>
+            <Text style={styles.featureItem}>✓ No Subscription Required</Text>
+          </View>
+        </Card>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
   },
-  titleContainer: {
+  header: {
+    padding: 20,
+    paddingTop: 60,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#1C1C1E',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1C1C1E',
+    marginBottom: 16,
+  },
+  dataStats: {
     flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#007AFF',
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginTop: 4,
+  },
+  dataActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  aboutInfo: {
+    marginBottom: 16,
+  },
+  aboutText: {
+    fontSize: 16,
+    color: '#1C1C1E',
+    marginBottom: 8,
+  },
+  aboutLabel: {
+    fontWeight: '600',
+  },
+  description: {
+    fontSize: 16,
+    color: '#6D6D70',
+    lineHeight: 24,
+  },
+  featuresList: {
     gap: 8,
+  },
+  featureItem: {
+    fontSize: 16,
+    color: '#1C1C1E',
+    paddingVertical: 4,
   },
 });
