@@ -4,7 +4,7 @@
     "slug": "physio_billing",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/physiospire logo.png",
     "scheme": "physiobilling",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: '#D1D1D6',
   },
   overallStats: {
     gap: 12,
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   },
   invoiceDate: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: '#D1D1D6',
     marginTop: 2,
   },
   outstandingAmount: {
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    color: '#8E8E93',
+    color: '#D1D1D6',
     fontSize: 16,
     paddingVertical: 20,
   },

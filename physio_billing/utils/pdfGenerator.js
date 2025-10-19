@@ -1,149 +1,153 @@
 import { printToFileAsync } from 'expo-print';
+import { Asset } from 'expo-asset';
+import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 // Plain JS: expects an object with { invoice, patient, services, clinicInfo }
 export const generateInvoicePDF = async (data) => {
   const { invoice, patient, services, clinicInfo } = data;
 
   const invoiceDate = new Date(invoice.issuedOn).toLocaleDateString();
-  const paidInfo = invoice.status === 'paid' && invoice.paidOn
-    ? `<div class="paid">PAID on ${new Date(invoice.paidOn).toLocaleDateString()}</div>`
-    : `<div class="unpaid">PAYMENT PENDING</div>`;
-
-  const serviceRows = invoice.items.map((item) => {
-    const svc = services.find(s => s.id === item.serviceId);
-    const name = (svc && svc.name) ? svc.name : 'Unknown Service';
-    const amount = (item.quantity * item.unitPrice).toFixed(2);
-    return `
-      <tr>
-        <td>${name}</td>
-        <td class="right">${item.quantity}</td>
-        <td class="right">₹${item.unitPrice.toFixed(2)}</td>
-        <td class="right">₹${amount}</td>
-      </tr>
-    `;
-  }).join('');
 
   const subtotal = invoice.items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
-  const discountAmount = subtotal * (invoice.discount / 100);
-  const taxableAmount = subtotal - discountAmount;
-  const taxAmount = taxableAmount * (invoice.taxRate / 100);
+  // Totals are computed directly in rows below; remove unused intermediate variables
+
+  let logoSrc = '';
+  if (clinicInfo.logoBase64) {
+    logoSrc = `data:image/png;base64,${clinicInfo.logoBase64}`;
+  } else if (clinicInfo.logoUrl) {
+    logoSrc = clinicInfo.logoUrl;
+  } else {
+    try {
+      const asset = Asset.fromModule(require('../assets/images/physiospire logo.png'));
+      if (!asset.localUri) {
+        await asset.downloadAsync();
+      }
+      const b64 = await FileSystem.readAsStringAsync(asset.localUri, { encoding: FileSystem.EncodingType.Base64 });
+      logoSrc = `data:image/png;base64,${b64}`;
+    } catch (e) {
+      // ignore if asset not available
+    }
+  }
 
   const html = `
-    <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 28px 32px; color: #1C1C1E; }
-        .top { text-align: center; margin-bottom: 16px; }
-        .brand { display: inline-flex; align-items: center; gap: 10px; }
-        .brand img { height: 46px; width: 46px; object-fit: contain; }
-        .brand-name { font-size: 18px; font-weight: 700; letter-spacing: .4px; }
-        .brand-sub { font-size: 10px; color: #666; margin-top: 2px; }
-
-        .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; font-size: 11px; margin-top: 10px; }
-        .meta .kv { display: grid; grid-template-columns: 120px 1fr; gap: 6px; }
-        .right { text-align: right; }
-
-        .title { text-align: center; margin: 14px 0 8px; font-size: 14px; font-weight: 700; }
-
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        thead th { border-bottom: 1px solid #000; padding: 8px 6px; font-weight: 700; }
-        tbody td { border-bottom: 1px solid #ddd; padding: 10px 6px; }
-        .num { text-align: right; }
-        .sn { width: 48px; text-align: center; }
-        .desc { width: auto; }
-        .qty { width: 60px; }
-        .rate { width: 80px; }
-        .amt { width: 100px; }
-
-        .summary { margin-top: 6px; font-size: 11px; width: 260px; margin-left: auto; }
-        .summary .row { display: flex; justify-content: space-between; padding: 6px 0; }
-        .summary .row.total { border-top: 1px solid #000; margin-top: 4px; padding-top: 8px; font-weight: 700; }
-        .summary .row.final { font-weight: 700; }
-        .paid { color: #34C759; font-weight: 600; }
-        .unpaid { color: #FF9500; font-weight: 600; }
-
-        .address { margin-top: 18px; font-size: 10px; color: #444; border-top: 1px solid #ccc; padding-top: 8px; }
-        .bar { margin-top: 8px; height: 18px; background: linear-gradient(90deg, #e05a2a 0%, #f38c4a 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 10px; gap: 24px; }
-      </style>
-    </head>
-    <body>
-      <div class="top">
-        <div class="brand">
-          ${clinicInfo.logoUrl ? `<img src="${clinicInfo.logoUrl}" />` : ''}
-          <div>
-            <div class="brand-name">${clinicInfo.name}</div>
-            <div class="brand-sub">Sports rehab and physiotherapy clinic</div>
-          </div>
-        </div>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Invoice - ${clinicInfo.name || 'Clinic'}</title>
+<!-- External fonts removed for offline safety; using system fonts -->
+<style>
+  :root{ --accent:#e85b1a; --dark:#111; --muted:#666; --paper:#fff; --border:#e6e6e6; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:var(--dark); }
+  body{ margin:0; background:#f3f4f6; -webkit-print-color-adjust:exact; }
+  .invoice-wrapper{ max-width:820px; margin:28px auto; background:var(--paper); padding:34px 48px; box-shadow:0 6px 20px rgba(0,0,0,0.06); border-radius:4px; border-top:6px solid var(--accent); }
+  .header{ display:flex; align-items:center; justify-content:center; gap:18px; margin-bottom:10px; }
+  .logo{ width:86px; height:86px; display:flex; align-items:center; justify-content:center; border-radius:6px; overflow:hidden; }
+  .clinic-name{ text-align:center; }
+  .clinic-name h1{ margin:0; font-size:20px; font-weight:700; letter-spacing:.2px; }
+  .clinic-name p{ margin:4px 0 0 0; color:var(--muted); font-size:12px; }
+  .meta{ display:flex; gap:28px; margin-top:18px; margin-bottom:20px; }
+  .meta .col{ flex:1; min-width:180px; }
+  .meta label{ display:block; font-weight:600; font-size:13px; margin-bottom:6px; }
+  .meta .value{ color:var(--muted); font-size:13px; white-space:pre-line; }
+  .invoice-title{ text-align:center; font-weight:700; margin:6px 0 14px 0; font-size:18px; }
+  .items{ width:100%; border-collapse:collapse; margin-bottom:14px; font-size:13px; }
+  .items thead th{ text-align:left; font-weight:600; padding:8px 6px; border-bottom:2px solid var(--border); }
+  .items tbody td{ padding:10px 6px; border-bottom:1px solid #f0f0f0; vertical-align:middle; }
+  .items .text-right{ text-align:right; }
+  .items .qty{ width:64px; text-align:center; }
+  .items .price,.items .total{ width:110px; text-align:right; }
+  .totals{ display:flex; justify-content:flex-end; margin-top:6px; }
+  .totals table{ width:320px; border-collapse:collapse; font-size:13px; }
+  .totals td{ padding:6px 8px; }
+  .totals .label{ color:var(--muted); text-align:left; }
+  .totals .value{ text-align:right; font-weight:700; }
+  .totals .grand{ font-size:15px; border-top:2px solid var(--border); padding-top:10px; }
+  .rule{ height:1px; background:#000; opacity:.6; margin:8px 0 0 0; }
+  .rule-double{ height:3px; background:#000; opacity:.9; margin:2px 0 10px 0; }
+  .footer{ margin-top:34px; border-top:2px solid var(--border); padding-top:10px; display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:12px; color:var(--muted); }
+  .contact{ display:flex; gap:12px; align-items:center; }
+  .contact div{ display:flex; align-items:center; gap:8px; }
+  .color-bar{ width:140px; height:12px; border-radius:2px; background:linear-gradient(90deg,var(--accent) 0%, #000000 100%); }
+  @media (max-width:720px){ .invoice-wrapper{ padding:20px; margin:16px; } .meta{ flex-direction:column; gap:12px; } .totals table{ width:100%; } }
+  @media print{ body{ background:#fff; } .invoice-wrapper{ box-shadow:none; margin:0; border-radius:0; border-top:8px solid var(--accent); } a[href]:after{ content:''; } }
+</style>
+</head>
+<body>
+  <div class="invoice-wrapper" role="document">
+    <header class="header" aria-label="Invoice header">
+      <div class="logo">
+        ${logoSrc ? `<img src="${logoSrc}" alt="${clinicInfo.name || 'Clinic'} logo" style="width:100%;height:100%;object-fit:contain;"/>` : ''}
       </div>
-
-      <div class="meta">
-        <div class="kv">
-          <div>Registration Id</div><div>${invoice.id.slice(-8).toUpperCase()}</div>
-          <div>Bill No</div><div>${invoice.id.slice(-4).toUpperCase()}</div>
-          <div>Patient Name</div><div>${patient.name}</div>
-          <div>Address</div><div>${clinicInfo.address || '-'}</div>
-          <div>Mobile No</div><div>${patient.phone || '-'}</div>
-          <div>Age/Sex</div><div>${patient.age || '-'} / -</div>
-        </div>
-        <div class="kv">
-          <div>Date</div><div class="right">${invoiceDate}</div>
-          <div>Time</div><div class="right">${new Date().toLocaleTimeString()}</div>
-          <div>Consultant</div><div class="right">${clinicInfo.consultant || '-'}</div>
-          <div>Payment mode</div><div class="right">${invoice.status === 'paid' ? 'Cash' : '—'}</div>
-          <div>Department</div><div class="right">${clinicInfo.department || '-'}</div>
-        </div>
+      <div class="clinic-name" style="min-width:280px">
+        <h1>${clinicInfo.name || 'Clinic'}</h1>
+        <p>${clinicInfo.tagline || 'Sports Rehab and Physiotherapy clinic'}</p>
       </div>
-
-      <div class="title">Invoice</div>
-
-      <table>
-        <thead>
-          <tr>
-            <th class="sn">Sl No</th>
-            <th class="desc">Product/Service Name</th>
-            <th class="qty num">Qty</th>
-            <th class="rate num">Price</th>
-            <th class="amt num">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${invoice.items.map((item, idx) => {
-            const svc = services.find(s => s.id === item.serviceId);
-            const name = (svc && svc.name) ? svc.name : 'Unknown Service';
-            const amount = (item.quantity * item.unitPrice).toFixed(2);
-            return `
-              <tr>
-                <td class="sn">${idx + 1}</td>
-                <td class="desc">${name}</td>
-                <td class="qty num">${item.quantity}</td>
-                <td class="rate num">₹${item.unitPrice.toFixed(2)}</td>
-                <td class="amt num">₹${amount}</td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-
-      <div class="summary">
-        <div class="row total"><div>Total</div><div>₹${subtotal.toFixed(2)}</div></div>
-        <div class="row"><div>Due Amount</div><div>₹${invoice.status === 'paid' ? '0.00' : subtotal.toFixed(2)}</div></div>
-        <div class="row final"><div>Received Amount</div><div>₹${invoice.status === 'paid' ? invoice.total.toFixed(2) : '0.00'}</div></div>
-        ${paidInfo}
+    </header>
+    <section class="meta" aria-label="Invoice information">
+      <div class="col">
+        <label>Registration Id</label><div class="value">${invoice.id.slice(-8).toUpperCase()}</div>
+        <label style="margin-top:10px">Bill No</label><div class="value">${invoice.id.slice(-4).toUpperCase()}</div>
+        <label style="margin-top:10px">Patient Name</label><div class="value">${patient.name}</div>
+        <label style="margin-top:10px">Guardian Name</label><div class="value">${patient.guardian || ''}</div>
+        <label style="margin-top:10px">Address</label><div class="value">${clinicInfo.address || ''}</div>
+        <label style="margin-top:10px">Mobile No</label><div class="value">${patient.phone || ''}</div>
+        <label style="margin-top:10px">Age / Sex</label><div class="value">${patient.age || ''} / ${patient.sex || '-'}</div>
       </div>
-
-      <div class="address">
-        ${clinicInfo.address || ''}
+      <div class="col">
+        <label>Date</label><div class="value">${invoiceDate}</div>
+        <label style="margin-top:10px">Time</label><div class="value">${new Date().toLocaleTimeString()}</div>
+        <label style="margin-top:10px">Consultant</label><div class="value">${clinicInfo.consultant || ''}</div>
+        <label style="margin-top:10px">Payment Mode</label><div class="value">${invoice.status === 'paid' ? 'Cash' : (clinicInfo.paymentMode || '—')}</div>
+        <label style="margin-top:10px">Department</label><div class="value">${clinicInfo.department || ''}</div>
       </div>
-      <div class="bar">
-        ${clinicInfo.email ? `<span>${clinicInfo.email}</span>` : ''}
-        ${clinicInfo.phone ? `<span>${clinicInfo.phone}</span>` : ''}
-        ${clinicInfo.instagram ? `<span>@${clinicInfo.instagram}</span>` : ''}
+    </section>
+    <div class="invoice-title">Invoice</div>
+    <div class="rule"></div>
+    <div class="rule-double"></div>
+    <table class="items" aria-label="Invoice items">
+      <thead>
+        <tr>
+          <th style="width:48px">Sl No</th>
+          <th>Product name / Description</th>
+          <th class="qty">Qty</th>
+          <th class="price">Price</th>
+          <th class="total">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${invoice.items.map((it, idx) => {
+          const svc = services.find(s => s.id === it.serviceId);
+          const name = (svc && svc.name) ? svc.name : 'Unknown Service';
+          const line = (it.quantity * it.unitPrice);
+          return `<tr>
+            <td>${idx + 1}</td>
+            <td>${name}</td>
+            <td class="qty">${it.quantity}</td>
+            <td class="price">₹${it.unitPrice.toFixed(2)}</td>
+            <td class="total">₹${line.toFixed(2)}</td>
+          </tr>`; }).join('')}
+      </tbody>
+    </table>
+    <div class="rule"></div>
+    <div class="rule-double"></div>
+    <div class="totals" role="note" aria-label="Invoice totals">
+      <table><tbody>
+        <tr><td class="label">Total</td><td class="value">₹ ${subtotal.toFixed(2)}</td></tr>
+        <tr><td class="label">Due Amount</td><td class="value">₹ ${(invoice.status === 'paid' ? 0 : subtotal).toFixed(2)}</td></tr>
+        <tr class="grand"><td class="label">Received Amount</td><td class="value">₹ ${(invoice.status === 'paid' ? invoice.total : 0).toFixed(2)}</td></tr>
+      </tbody></table>
+    </div>
+    <footer class="footer" aria-label="Invoice footer">
+      <div class="contact"><div><strong>Address:</strong><span style="margin-left:6px">${clinicInfo.address || ''}</span></div></div>
+      <div class="contact" style="flex-direction:column;align-items:flex-end">
+        <div><span style="margin-right:10px">${clinicInfo.email || ''}</span> • <span style="margin-left:10px">${clinicInfo.phone || ''}</span></div>
+        <div style="margin-top:8px"><div class="color-bar" aria-hidden="true"></div></div>
       </div>
-    </body>
-    </html>
-  `;
+    </footer>
+  </div>
+</body>
+</html>`;
 
   const { uri } = await printToFileAsync({ html });
   return uri;
