@@ -1,19 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 
-interface InputProps {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
-  keyboardType?: 'default' | 'numeric' | 'phone-pad' | 'email-address';
-  multiline?: boolean;
-  numberOfLines?: number;
-  error?: string;
-  required?: boolean;
-}
-
-export const Input: React.FC<InputProps> = ({
+export const Input = ({
   label,
   value,
   onChangeText,

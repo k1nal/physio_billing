@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 
 export default function ReportsScreen() {
   const { invoices, patients, getDashboardStats, getPatientById } = useBillingStore();
-  const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month'>('month');
+  const [selectedPeriod, setSelectedPeriod] = useState('month');
   
   const stats = getDashboardStats();
   
@@ -18,7 +18,7 @@ export default function ReportsScreen() {
     startOfWeek.setDate(startOfDay.getDate() - startOfDay.getDay());
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    let startDate: Date;
+    let startDate;
     switch (selectedPeriod) {
       case 'today':
         startDate = startOfDay;
@@ -41,7 +41,7 @@ export default function ReportsScreen() {
   const periodRevenue = paidInvoices.reduce((sum, inv) => sum + inv.total, 0);
   const periodOutstanding = unpaidInvoices.reduce((sum, inv) => sum + inv.total, 0);
 
-  const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
+  const formatCurrency = (amount) => `₹${amount.toFixed(2)}`;
 
   const exportData = () => {
     // This would implement CSV export functionality
@@ -62,7 +62,7 @@ export default function ReportsScreen() {
         <Card>
           <Text style={styles.sectionTitle}>Period</Text>
           <View style={styles.periodSelector}>
-            {(['today', 'week', 'month'] as const).map((period) => (
+            {['today', 'week', 'month'].map((period) => (
               <TouchableOpacity
                 key={period}
                 style={[

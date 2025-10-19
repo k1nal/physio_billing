@@ -14,7 +14,7 @@ export default function DashboardScreen() {
     .sort((a, b) => new Date(b.issuedOn).getTime() - new Date(a.issuedOn).getTime())
     .slice(0, 5);
 
-  const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
+  const formatCurrency = (amount) => `₹${amount.toFixed(2)}`;
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>

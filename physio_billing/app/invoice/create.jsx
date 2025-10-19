@@ -3,7 +3,6 @@ import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useBillingStore } from '@/store/billingStore';
-import { Patient, Service, InvoiceItem } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -20,8 +19,8 @@ export default function CreateInvoiceScreen() {
     calculateInvoiceTotal 
   } = useBillingStore();
   
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [invoiceItems, setInvoiceItems] = useState<InvoiceItem[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [invoiceItems, setInvoiceItems] = useState([]);
   const [discount, setDiscount] = useState('0');
   const [taxRate, setTaxRate] = useState('0');
   const [notes, setNotes] = useState('');
@@ -36,7 +35,7 @@ export default function CreateInvoiceScreen() {
   const filteredPatients = searchPatients(patientSearchQuery);
   const filteredServices = searchServices(serviceSearchQuery);
 
-  const addServiceToInvoice = (service: Service) => {
+  const addServiceToInvoice = (service) => {
     const existingItem = invoiceItems.find(item => item.serviceId === service.id);
     
     if (existingItem) {
@@ -48,7 +47,7 @@ export default function CreateInvoiceScreen() {
         )
       );
     } else {
-      const newItem: InvoiceItem = {
+      const newItem = {
         id: Date.now().toString(),
         serviceId: service.id,
         quantity: 1,
@@ -61,7 +60,7 @@ export default function CreateInvoiceScreen() {
     setServiceSearchQuery('');
   };
 
-  const updateItemQuantity = (itemId: string, quantity: number) => {
+  const updateItemQuantity = (itemId, quantity) => {
     if (quantity <= 0) {
       setInvoiceItems(items => items.filter(item => item.id !== itemId));
     } else {
@@ -73,11 +72,11 @@ export default function CreateInvoiceScreen() {
     }
   };
 
-  const removeItem = (itemId: string) => {
+  const removeItem = (itemId) => {
     setInvoiceItems(items => items.filter(item => item.id !== itemId));
   };
 
-  const getServiceById = (serviceId: string) => {
+  const getServiceById = (serviceId) => {
     return services.find(s => s.id === serviceId);
   };
 
@@ -136,7 +135,7 @@ export default function CreateInvoiceScreen() {
     }
   };
 
-  const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
+  const formatCurrency = (amount) => `₹${amount.toFixed(2)}`;
 
   return (
     <View style={styles.container}>

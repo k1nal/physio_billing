@@ -9,19 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-interface ModalProps {
-  visible: boolean;
-  onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-}
-
-export const Modal: React.FC<ModalProps> = ({
-  visible,
-  onClose,
-  title,
-  children,
-}) => {
+export const Modal = ({ visible, onClose, title, children }) => {
   return (
     <RNModal
       visible={visible}

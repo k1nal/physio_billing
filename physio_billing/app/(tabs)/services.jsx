@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useBillingStore } from '@/store/billingStore';
-import { Service } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Modal } from '@/components/ui/Modal';
@@ -13,18 +12,18 @@ export default function ServicesScreen() {
   const { services, searchServices, addService, updateService, deleteService } = useBillingStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [editingService, setEditingService] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
     description: '',
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const filteredServices = searchServices(searchQuery);
 
-  const openModal = (service?: Service) => {
+  const openModal = (service) => {
     if (service) {
       setEditingService(service);
       setFormData({
@@ -48,7 +47,7 @@ export default function ServicesScreen() {
   };
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors = {};
     
     if (!formData.name.trim()) {
       newErrors.name = 'Service name is required';
@@ -89,7 +88,7 @@ export default function ServicesScreen() {
     }
   };
 
-  const handleDelete = (service: Service) => {
+  const handleDelete = (service) => {
     Alert.alert(
       'Delete Service',
       `Are you sure you want to delete "${service.name}"?`,
@@ -104,7 +103,7 @@ export default function ServicesScreen() {
     );
   };
 
-  const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
+  const formatCurrency = (amount) => `₹${amount.toFixed(2)}`;
 
   return (
     <View style={styles.container}>

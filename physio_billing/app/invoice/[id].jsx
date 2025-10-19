@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { generateInvoicePDF, shareInvoicePDF, getDefaultClinicInfo } from '@/utils/pdfGenerator';
 
 export default function InvoiceDetailsScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams();
   const { 
     invoices, 
     getPatientById, 
@@ -115,8 +115,8 @@ export default function InvoiceDetailsScreen() {
     }
   };
 
-  const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
-  const formatDate = (date: Date | string) => new Date(date).toLocaleDateString();
+  const formatCurrency = (amount) => `₹${amount.toFixed(2)}`;
+  const formatDate = (date) => new Date(date).toLocaleDateString();
 
   return (
     <View style={styles.container}>

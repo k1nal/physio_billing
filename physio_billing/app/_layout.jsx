@@ -12,6 +12,7 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+  // Sets up global navigation stack and theme, and loads persisted billing data on app start.
   const colorScheme = useColorScheme();
   const loadData = useBillingStore((state) => state.loadData);
 
@@ -44,3 +45,4 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
+

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useBillingStore } from '@/store/billingStore';
-import { Patient } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Modal } from '@/components/ui/Modal';
@@ -13,19 +12,19 @@ export default function PatientsScreen() {
   const { patients, searchPatients, addPatient, updatePatient, deletePatient } = useBillingStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
-  const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
+  const [editingPatient, setEditingPatient] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     age: '',
     notes: '',
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   const filteredPatients = searchPatients(searchQuery);
 
-  const openModal = (patient?: Patient) => {
+  const openModal = (patient) => {
     if (patient) {
       setEditingPatient(patient);
       setFormData({
@@ -50,7 +49,7 @@ export default function PatientsScreen() {
   };
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors = {};
     
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
@@ -96,7 +95,7 @@ export default function PatientsScreen() {
     }
   };
 
-  const handleDelete = (patient: Patient) => {
+  const handleDelete = (patient) => {
     Alert.alert(
       'Delete Patient',
       `Are you sure you want to delete ${patient.name}?`,
