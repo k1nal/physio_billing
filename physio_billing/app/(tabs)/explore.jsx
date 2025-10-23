@@ -11,6 +11,7 @@ export default function SettingsScreen() {
   const [clinicAddress, setClinicAddress] = useState('123 Health Street, Medical District, City - 123456');
   const [clinicPhone, setClinicPhone] = useState('+91 98765 43210');
   const [clinicEmail, setClinicEmail] = useState('info@physioclinic.com');
+  const [consultantName, setConsultantName] = useState('');
 
   const handleSaveSettings = () => {
     Alert.alert('Success', 'Settings saved successfully!');
@@ -58,6 +59,13 @@ export default function SettingsScreen() {
             placeholder="Enter clinic address"
             multiline
             numberOfLines={3}
+          />
+
+          <Input
+            label="Consultant Name"
+            value={consultantName}
+            onChangeText={setConsultantName}
+            placeholder="Enter consultant name"
           />
           
           <Input
@@ -159,7 +167,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#1C1C1E',
   },
   header: {
     padding: 20,
@@ -168,7 +176,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
   },
   content: {
     flex: 1,
@@ -177,7 +185,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginBottom: 16,
   },
   dataStats: {
@@ -195,7 +203,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: '#D1D1D6',
     marginTop: 4,
   },
   dataActions: {
@@ -207,7 +215,7 @@ const styles = StyleSheet.create({
   },
   aboutText: {
     fontSize: 16,
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   aboutLabel: {
@@ -215,7 +223,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 16,
-    color: '#6D6D70',
+    color: '#D1D1D6',
     lineHeight: 24,
   },
   featuresList: {
@@ -223,7 +231,7 @@ const styles = StyleSheet.create({
   },
   featureItem: {
     fontSize: 16,
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     paddingVertical: 4,
   },
 });

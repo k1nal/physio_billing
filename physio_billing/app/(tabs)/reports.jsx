@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useBillingStore } from '@/store/billingStore';
 import { Card } from '@/components/ui/Card';
@@ -177,28 +178,30 @@ export default function ReportsScreen() {
               .map((invoice) => {
                 const patient = getPatientById(invoice.patientId);
                 return (
-                  <View key={invoice.id} style={styles.transactionItem}>
-                    <View style={styles.transactionInfo}>
-                      <Text style={styles.patientName}>{patient?.name || 'Unknown'}</Text>
-                      <Text style={styles.invoiceDate}>
-                        {new Date(invoice.issuedOn).toLocaleDateString()}
-                      </Text>
-                    </View>
-                    <View style={styles.transactionAmount}>
-                      <Text style={styles.amountText}>{formatCurrency(invoice.total)}</Text>
-                      <View style={[
-                        styles.statusBadge,
-                        invoice.status === 'paid' ? styles.paidBadge : styles.unpaidBadge
-                      ]}>
-                        <Text style={[
-                          styles.statusText,
-                          invoice.status === 'paid' ? styles.paidText : styles.unpaidText
-                        ]}>
-                          {invoice.status.toUpperCase()}
+                  <Link key={invoice.id} href={`/invoice/${invoice.id}`} asChild>
+                    <TouchableOpacity style={styles.transactionItem}>
+                      <View style={styles.transactionInfo}>
+                        <Text style={styles.patientName}>{patient?.name || 'Unknown'}</Text>
+                        <Text style={styles.invoiceDate}>
+                          {new Date(invoice.issuedOn).toLocaleDateString()}
                         </Text>
                       </View>
-                    </View>
-                  </View>
+                      <View style={styles.transactionAmount}>
+                        <Text style={styles.amountText}>{formatCurrency(invoice.total)}</Text>
+                        <View style={[
+                          styles.statusBadge,
+                          invoice.status === 'paid' ? styles.paidBadge : styles.unpaidBadge
+                        ]}>
+                          <Text style={[
+                            styles.statusText,
+                            invoice.status === 'paid' ? styles.paidText : styles.unpaidText
+                          ]}>
+                            {invoice.status.toUpperCase()}
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  </Link>
                 );
               })
           )}

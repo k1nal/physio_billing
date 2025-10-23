@@ -29,6 +29,16 @@ export const generateInvoicePDF = async (data) => {
     }
   }
 
+  let backgroundSrc = '';
+  try {
+    const bgAsset = Asset.fromModule(require('../invoice format.jpeg'));
+    if (!bgAsset.localUri) {
+      await bgAsset.downloadAsync();
+    }
+    const bg64 = await FileSystem.readAsStringAsync(bgAsset.localUri, { encoding: FileSystem.EncodingType.Base64 });
+    backgroundSrc = `data:image/jpeg;base64,${bg64}`;
+  } catch (e) {}
+
   const html = `
 <!doctype html>
 <html lang="en">
@@ -39,8 +49,9 @@ export const generateInvoicePDF = async (data) => {
 <!-- External fonts removed for offline safety; using system fonts -->
 <style>
   :root{ --accent:#e85b1a; --dark:#111; --muted:#666; --paper:#fff; --border:#e6e6e6; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:var(--dark); }
-  body{ margin:0; background:#f3f4f6; -webkit-print-color-adjust:exact; }
-  .invoice-wrapper{ max-width:820px; margin:28px auto; background:var(--paper); padding:34px 48px; box-shadow:0 6px 20px rgba(0,0,0,0.06); border-radius:4px; border-top:6px solid var(--accent); }
+  body{ margin:0; background:#ffffff; -webkit-print-color-adjust:exact; }
+  .bg{ position:fixed; inset:0; width:100%; height:100%; z-index:-1; object-fit:cover; }
+  .invoice-wrapper{ max-width:820px; margin:28px auto; background:transparent; padding:34px 48px; box-shadow:none; border-radius:0; border-top:0; }
   .header{ display:flex; align-items:center; justify-content:center; gap:18px; margin-bottom:10px; }
   .logo{ width:86px; height:86px; display:flex; align-items:center; justify-content:center; border-radius:6px; overflow:hidden; }
   .clinic-name{ text-align:center; }
@@ -70,10 +81,11 @@ export const generateInvoicePDF = async (data) => {
   .contact div{ display:flex; align-items:center; gap:8px; }
   .color-bar{ width:140px; height:12px; border-radius:2px; background:linear-gradient(90deg,var(--accent) 0%, #000000 100%); }
   @media (max-width:720px){ .invoice-wrapper{ padding:20px; margin:16px; } .meta{ flex-direction:column; gap:12px; } .totals table{ width:100%; } }
-  @media print{ body{ background:#fff; } .invoice-wrapper{ box-shadow:none; margin:0; border-radius:0; border-top:8px solid var(--accent); } a[href]:after{ content:''; } }
+  @media print{ body{ background:#fff; } .invoice-wrapper{ box-shadow:none; margin:0; border-radius:0; border-top:0; } a[href]:after{ content:''; } }
 </style>
 </head>
 <body>
+  ${backgroundSrc ? `<img class="bg" src="${backgroundSrc}" alt="background"/>` : ''}
   <div class="invoice-wrapper" role="document">
     <header class="header" aria-label="Invoice header">
       <div class="logo">
@@ -98,7 +110,7 @@ export const generateInvoicePDF = async (data) => {
         <label>Date</label><div class="value">${invoiceDate}</div>
         <label style="margin-top:10px">Time</label><div class="value">${new Date().toLocaleTimeString()}</div>
         <label style="margin-top:10px">Consultant</label><div class="value">${clinicInfo.consultant || ''}</div>
-        <label style="margin-top:10px">Payment Mode</label><div class="value">${invoice.status === 'paid' ? 'Cash' : (clinicInfo.paymentMode || '—')}</div>
+        <label style="margin-top:10px">Payment Mode</label><div class="value">${invoice.paymentMode || clinicInfo.paymentMode || '—'}</div>
         <label style="margin-top:10px">Department</label><div class="value">${clinicInfo.department || ''}</div>
       </div>
     </section>

@@ -24,6 +24,7 @@ export default function CreateInvoiceScreen() {
   const [discount, setDiscount] = useState('0');
   const [taxRate, setTaxRate] = useState('0');
   const [notes, setNotes] = useState('');
+  const [paymentMode, setPaymentMode] = useState('Cash');
   const [loading, setLoading] = useState(false);
   
   // Modal states
@@ -104,6 +105,7 @@ export default function CreateInvoiceScreen() {
         items: invoiceItems,
         discount: Number(discount) || 0,
         taxRate: Number(taxRate) || 0,
+        paymentMode,
         status: 'unpaid',
         notes: notes.trim(),
       });
@@ -211,6 +213,24 @@ export default function CreateInvoiceScreen() {
               );
             })
           )}
+        </Card>
+
+        {/* Payment */}
+        <Card>
+          <Text style={styles.sectionTitle}>Payment</Text>
+          <View style={styles.paymentRow}>
+            {['Cash','Gpay','Card','Other'].map((mode) => (
+              <TouchableOpacity
+                key={mode}
+                style={[styles.paymentOption, paymentMode === mode && styles.paymentOptionSelected]}
+                onPress={() => setPaymentMode(mode)}
+              >
+                <Text style={[styles.paymentOptionText, paymentMode === mode && styles.paymentOptionTextSelected]}>
+                  {mode}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </Card>
 
         {/* Calculations */}
@@ -352,7 +372,7 @@ export default function CreateInvoiceScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#1C1C1E',
   },
   content: {
     flex: 1,
@@ -361,7 +381,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginBottom: 16,
   },
   sectionHeader: {
@@ -381,11 +401,11 @@ const styles = StyleSheet.create({
   patientName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
   },
   patientDetails: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: '#D1D1D6',
     marginTop: 2,
   },
   changeText: {
@@ -398,7 +418,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F7',
+    borderBottomColor: '#2C2C2E',
   },
   serviceInfo: {
     flex: 1,
@@ -406,11 +426,11 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
   },
   servicePrice: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: '#D1D1D6',
     marginTop: 2,
   },
   serviceControls: {
@@ -422,7 +442,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#2C2C2E',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -431,6 +451,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     minWidth: 30,
     textAlign: 'center',
+    color: '#FFFFFF',
   },
   removeButton: {
     padding: 8,
@@ -447,7 +468,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#F2F2F7',
+    borderTopColor: '#2C2C2E',
   },
   totalRow: {
     flexDirection: 'row',
@@ -457,28 +478,28 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: 16,
-    color: '#1C1C1E',
+    color: '#FFFFFF',
   },
   totalValue: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
   },
   finalTotal: {
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#C7C7CC',
+    borderTopColor: '#2C2C2E',
   },
   finalTotalLabel: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
   },
   finalTotalValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
   },
   createButtonContainer: {
     marginVertical: 24,
@@ -486,16 +507,16 @@ const styles = StyleSheet.create({
   modalItem: {
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F7',
+    borderBottomColor: '#2C2C2E',
   },
   modalItemTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
   },
   modalItemSubtitle: {
     fontSize: 14,
-    color: '#8E8E93',
+    color: '#D1D1D6',
     marginTop: 2,
   },
   serviceModalItem: {
@@ -510,8 +531,30 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    color: '#8E8E93',
+    color: '#D1D1D6',
     fontSize: 16,
     paddingVertical: 20,
+  },
+  paymentRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  paymentOption: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: '#2C2C2E',
+  },
+  paymentOptionSelected: {
+    backgroundColor: '#007AFF',
+  },
+  paymentOptionText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  paymentOptionTextSelected: {
+    color: '#FFFFFF',
   },
 });

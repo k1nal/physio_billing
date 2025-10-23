@@ -17,6 +17,7 @@ export default function PatientsScreen() {
     name: '',
     phone: '',
     age: '',
+    sex: '',
     notes: '',
   });
   const [errors, setErrors] = useState({});
@@ -31,11 +32,12 @@ export default function PatientsScreen() {
         name: patient.name,
         phone: patient.phone,
         age: patient.age.toString(),
+        sex: patient.sex || '',
         notes: patient.notes || '',
       });
     } else {
       setEditingPatient(null);
-      setFormData({ name: '', phone: '', age: '', notes: '' });
+      setFormData({ name: '', phone: '', age: '', sex: '', notes: '' });
     }
     setErrors({});
     setModalVisible(true);
@@ -44,7 +46,7 @@ export default function PatientsScreen() {
   const closeModal = () => {
     setModalVisible(false);
     setEditingPatient(null);
-    setFormData({ name: '', phone: '', age: '', notes: '' });
+    setFormData({ name: '', phone: '', age: '', sex: '', notes: '' });
     setErrors({});
   };
 
@@ -78,6 +80,7 @@ export default function PatientsScreen() {
         name: formData.name.trim(),
         phone: formData.phone.trim(),
         age: Number(formData.age),
+        sex: (formData.sex || '').trim(),
         notes: formData.notes.trim(),
       };
 
@@ -140,7 +143,7 @@ export default function PatientsScreen() {
                   <View style={styles.patientInfo}>
                     <Text style={styles.patientName}>{patient.name}</Text>
                     <Text style={styles.patientDetails}>
-                      {patient.phone} • Age {patient.age}
+                      {patient.phone} • Age {patient.age}{patient.sex ? ` • ${patient.sex}` : ''}
                     </Text>
                     {patient.notes && (
                       <Text style={styles.patientNotes}>{patient.notes}</Text>
@@ -199,6 +202,13 @@ export default function PatientsScreen() {
           keyboardType="numeric"
           error={errors.age}
           required
+        />
+
+        <Input
+          label="Sex"
+          value={formData.sex}
+          onChangeText={(text) => setFormData({ ...formData, sex: text })}
+          placeholder="Male / Female / Other"
         />
 
         <Input

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Image, Text } from 'react-native';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -22,7 +23,22 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+      {(() => {
+        Text.defaultProps = Text.defaultProps || {};
+        Text.defaultProps.style = [Text.defaultProps.style, { color: '#FFFFFF' }];
+        return null;
+      })()}
+      <Stack screenOptions={{
+        headerStyle: { backgroundColor: '#000000' },
+        headerTintColor: '#FFFFFF',
+        headerTitle: () => (
+          <Image
+            source={require('../assets/images/physiospire logo.png')}
+            style={{ width: 28, height: 28, tintColor: '#FFFFFF' }}
+            resizeMode="contain"
+          />
+        ),
+      }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen 
           name="invoice/create" 
